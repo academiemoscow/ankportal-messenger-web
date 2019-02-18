@@ -30,7 +30,11 @@ class FirebaseMessagesObserver {
 
 	observeForNewMessages() {
 		this.messageRef.on('child_added', function(roomSnapshot) {
-			this.messages[roomSnapshot.key] = [];
+			
+			if (typeof this.messages[roomSnapshot.key] === "undefined") {
+				this.messages[roomSnapshot.key] = [];
+			}
+
 			firebase.database().ref(`messages/${roomSnapshot.key}`)
 				.on('child_added', function(roomMessagesSnapshot) {
 
