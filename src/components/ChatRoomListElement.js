@@ -1,4 +1,5 @@
 import React from 'react';
+import { DateNumber } from 'helpers/helpers';
 
 export default class ChatRoomListElement extends React.Component {
 
@@ -11,13 +12,23 @@ export default class ChatRoomListElement extends React.Component {
 	}
 
 	render() {
+		let timestamp = DateNumber.since1970(this.props.timestamp);
+		var options = {
+			month: 'long',
+			day: 'numeric',
+			weekday: 'short',
+			timezone: 'UTC',
+			hour: 'numeric',
+			minute: 'numeric'
+		};
+		let formattedTimestamp = timestamp.toLocaleString('ru', options);
 		return(
 			<div 
 				className	= { this.getDivClasses() }
 				onClick 	= { this.props.onClick(this) }
-				>
+			>
 				<p>Message text: { this.props.messageText }</p>
-				<p>Timestamp: { this.props.timestamp }</p>
+				<p>Timestamp: { formattedTimestamp }</p>
 			</div>
 		);
 	}

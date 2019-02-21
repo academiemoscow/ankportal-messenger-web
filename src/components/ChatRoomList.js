@@ -15,6 +15,9 @@ export default class ChatRoomList extends React.Component {
 		super(props);
 		this.firebaseDidRecieveNewMessage = this.firebaseDidRecieveNewMessage.bind(this);
 		this.returnHandlerSelectRoom = this.returnHandlerSelectRoom.bind(this);
+	}
+
+	componentDidMount() {
 		firebaseMessagesObserver.addObserver(this);
 	}
 
@@ -28,8 +31,14 @@ export default class ChatRoomList extends React.Component {
 
 	returnHandlerSelectRoom(elem) {
 		let context = this;
+		let state = { 
+			selectedRoomId: null 
+		}
+		if ( elem !== undefined ) {
+			state.selectedRoomId = elem.props.chatRoomId;	
+		}
 		return function() {
-			context.setState({ selectedRoomId: elem.props.chatRoomId });
+			context.setState(state);
 		}
 	}
 
@@ -63,10 +72,10 @@ export default class ChatRoomList extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<div className="row m-0 chat-room-list-container">
 				<div 
-					className="chat-room-list"
-					>
+					className="chat-room-list col-md-4 p-0"
+				>
 					{ this.createRoomList() }
 				</div>
 				{ this.renderRoomLog() }

@@ -1,6 +1,7 @@
 import firebase from 'controllers/FirebaseInitialize';
 import 'firebase/database';
 
+
 class FirebaseMessagesObserver {
 
 	observers = [];
@@ -9,11 +10,22 @@ class FirebaseMessagesObserver {
 
 	addObserver(observer) {
 		this.observers.push(observer);
+		this.sendAllMessagesToObserver(observer);
 	}
 
 	constructor() {
 		this.messageRef = firebase.database().ref("messages");
 		this.observeForNewMessages();
+	}
+
+	sendAllMessagesToObserver(observer) {
+		if (typeof observer["firebaseDidRecieveNewMessage"] !== "function") return;
+		let roomIdArray = Object.keys(this.messages);
+		for(let i = 0; i < roomIdArray.length; i++) {
+			this.messages[roomIdArray[i]].forEach(function(message) {
+				observer.firebaseDidRecieveNewMessage(message);	
+			})
+		}
 	}
 
 	tellObservers(messageToObservers) {
@@ -30,7 +42,6 @@ class FirebaseMessagesObserver {
 
 	observeForNewMessages() {
 		this.messageRef.on('child_added', function(roomSnapshot) {
-			
 			if (typeof this.messages[roomSnapshot.key] === "undefined") {
 				this.messages[roomSnapshot.key] = [];
 			}
@@ -40,7 +51,6 @@ class FirebaseMessagesObserver {
 
 					let roomMessage = roomMessagesSnapshot.toJSON();
 					this.messages[roomMessage.chatRoomId].push(roomMessage);
-
 					this.tellObservers("firebaseDidRecieveNewMessage", roomMessage);
 
 				}, this);
