@@ -1,7 +1,10 @@
 import firebase from 'controllers/FirebaseInitialize';
 import 'firebase/storage';
 
+import firebaseUserProvider from 'controllers/FirebaseUserProvider';
+
 class FirebaseStorage {
+
 	constructor() {
 		this.storageRef = firebase.storage().ref();
 	}

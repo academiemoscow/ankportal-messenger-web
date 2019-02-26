@@ -29,13 +29,9 @@ class FirebaseMessagesObserver {
 	}
 
 	tellObservers(messageToObservers) {
-		let args = [];
-		for(let i = 1; i < arguments.length; i++) {
-			args.push(arguments[i]);
-		}
 		this.observers.forEach(function(element) {
 			if (typeof element[messageToObservers] === "function") {
-				element[messageToObservers](...args);
+				element[messageToObservers](...arguments.slice(1));
 			}
 		})
 	}

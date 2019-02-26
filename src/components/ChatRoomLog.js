@@ -5,6 +5,7 @@ import { DateNumber } from 'helpers/helpers';
 import firebaseMessagesObserver from 'controllers/FirebaseMessagesObserver';
 import firebase from 'controllers/FirebaseInitialize'; 
 import 'firebase/auth';
+import ChatRoomInput from 'components/ChatRoomInput';
 
 class ChatRoomLog extends React.Component {
 
@@ -19,6 +20,10 @@ class ChatRoomLog extends React.Component {
 
 	componentDidMount() {
 		firebaseMessagesObserver.addObserver(this);
+	}
+
+	componentDidUpdate() {
+		this.baronRef.scrollToLast();	
 	}
 
 	firebaseDidRecieveNewMessage(message) {
@@ -64,15 +69,26 @@ class ChatRoomLog extends React.Component {
 		return divList;
 	}
 
+	renderPlaceholder = () => {
+		return <div className="placeholder">&nbsp;</div>;
+	}
+
+	renderRoomInput = () => {
+		if ( this.props.roomId === null ) return;
+		return <ChatRoomInput />
+	}
+
 	render() {
 		return(
-			<div className   = "col-md-8 p-0 chat-room-log-container">
-				<Baron>
-					<div className="chat-room-log p-2">
-						{ this.createRoomLog() }
-					</div>
-				</Baron>
-
+			<div className   = "col-sm-8 p-0 chat-room-log-container">
+				<div className = "chat-room-messages">
+					<Baron ref={(r) => this.baronRef = r}>
+						<div className="chat-room-log p-2">
+							{ this.props.roomId === null ? this.renderPlaceholder() : this.createRoomLog() }
+						</div>
+					</Baron>
+				</div>
+				{ this.renderRoomInput() }
 			</div>
 		);
 	}

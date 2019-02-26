@@ -6,7 +6,7 @@ import firebase from 'controllers/FirebaseInitialize';
 import FirebaseLoginUI from 'controllers/FirebaseLoginUI'; 
 import 'firebase/auth';
 
-import FirebaseUserProvider from 'controllers/FirebaseUserProvider';
+import firebaseUserProvider from 'controllers/FirebaseUserProvider';
 
 class Chat extends React.Component {
 
@@ -17,13 +17,26 @@ class Chat extends React.Component {
 			// isLoggedIn: true
 		}
 
-		this.firUserProvider = new FirebaseUserProvider();
+		this.onAuthStateChange = this.onAuthStateChange.bind(this);
+	}
+
+	componentDidMount() {
+		this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
+			this.onAuthStateChange
+		);
+	}
+
+	componentWillUnmount() {
+		this.unregisterAuthObserver();
 	}
 
 	onAuthStateChange(user) {
-		this.setState({ isLoggedIn: !!user });
+		this.setState({ 
+			isLoggedIn: !!user,
+			currentUser: undefined
+		 });
 		if (!user) return;
-		this.firUserProvider.getUserById(user.uid, (user) => { 
+		firebaseUserProvider.getUserById(user.uid, (user) => { 
 			this.setState({ currentUser: user });
 		});
 	}
@@ -31,15 +44,20 @@ class Chat extends React.Component {
 	render() {
 		if ( !this.state.isLoggedIn ) {
 			return (
-				<FirebaseLoginUI onAuthStateChange={ this.onAuthStateChange.bind(this) }/>
+				<FirebaseLoginUI/>
 			);	
 		}
 
-		// if ( !this.state.currentUser ) {
-		// 	return (
-		// 		<div />
-		// 	);	
-		// }
+		if ( !this.state.currentUser ) {
+			return (
+				<div className="preloader-screen">
+					<div>
+						<img alt="ank logo" src="https://ankportal.ru/local/templates/main/images/logo.png"/>
+						<span className="cssload-loader"><span className="cssload-loader-inner"></span></span>
+					</div>
+				</div>
+			);	
+		}
 
 		return (
 			<div className="chat-container">

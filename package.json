@@ -9,6 +9,7 @@
     "react-baron": "^3.0.0",
     "react-dom": "^16.8.1",
     "react-firebaseui": "^3.1.2",
+    "react-native-vector-icons": "^6.3.0",
     "react-scripts": "2.1.5",
     "webpack": "^4.28.3"
   },
@@ -26,5 +27,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.3.4"
+  }
 }

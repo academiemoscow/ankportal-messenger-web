@@ -4,6 +4,9 @@ import ChatRoomLog from 'components/ChatRoomLog';
 
 import firebaseMessagesObserver from 'controllers/FirebaseMessagesObserver';
 
+import Baron from 'react-baron/dist/es5';
+import 'react-baron/src/styles.css';
+
 export default class ChatRoomList extends React.Component {
 
 	state = {
@@ -32,7 +35,8 @@ export default class ChatRoomList extends React.Component {
 	returnHandlerSelectRoom(elem) {
 		let context = this;
 		let state = { 
-			selectedRoomId: null 
+			selectedRoomId: null,
+			expanded: false 
 		}
 		if ( elem !== undefined ) {
 			state.selectedRoomId = elem.props.chatRoomId;	
@@ -64,19 +68,36 @@ export default class ChatRoomList extends React.Component {
 	}
 
 	renderRoomLog = () => {
-		if ( this.state.selectedRoomId !== null ) {
-			return <ChatRoomLog roomId={ this.state.selectedRoomId } />
-		} 
-		return
+		return <ChatRoomLog roomId={ this.state.selectedRoomId } />
+	}
+
+	toggleRoomList = () => {
+		this.setState({ expanded: !this.state.expanded });
+	}
+
+	getClassForRoomList = () => {
+		if ( this.state.expanded ) {
+			return "chat-room-list expanded col-sm-4 p-0"
+		}
+		return "chat-room-list col-sm-4 p-0"
 	}
 
 	render() {
 		return (
-			<div className="row m-0 chat-room-list-container">
+			<div className = "row m-0 chat-room-list-container">
 				<div 
-					className="chat-room-list col-md-4 p-0"
+					className={ this.getClassForRoomList() }
 				>
-					{ this.createRoomList() }
+					<div className="chat-room-list-expand">
+						<button onClick={ this.toggleRoomList } className="cmn-toggle-switch cmn-toggle-switch__htx">
+							<span>toggle menu</span>
+						</button>
+					</div>
+					<Baron>
+						<div>
+							{ this.createRoomList() }
+						</div>
+					</Baron>
 				</div>
 				{ this.renderRoomLog() }
 			</div>

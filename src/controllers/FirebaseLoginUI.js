@@ -17,16 +17,6 @@ export default class FirebaseLoginUI extends React.Component {
 		}
 	};
 
-	componentDidMount() {
-		this.unregisterAuthObserver = firebase.auth().onAuthStateChanged(
-			(user) => this.props.onAuthStateChange(user)
-		);
-	}
-
-	componentWillUnmount() {
-		this.unregisterAuthObserver();
-	}
-
 	render() {
 		return(
 				<StyledFirebaseAuth 

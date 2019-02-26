@@ -1,6 +1,4 @@
 import React from 'react';
-import firebaseStorage from 'controllers/FirebaseStorage';
-
 import ChatHeaderUserInfo from 'components/ChatHeaderUserInfo';
 
 export default class ChatHeader extends React.Component {

@@ -1,0 +1,111 @@
+.cmn-toggle-switch span {
+  display: block;
+  position: absolute;
+  top: 19px;
+  left: 10px;
+  right: 10px;
+  height: 5px;
+  background: white;
+}
+
+.cmn-toggle-switch span::before,
+.cmn-toggle-switch span::after {
+  position: absolute;
+  display: block;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background-color: #fff;
+  content: "";
+}
+
+.cmn-toggle-switch span::before {
+  top: -10px;
+}
+
+.cmn-toggle-switch span::after {
+  bottom: -10px;
+}
+
+.cmn-toggle-switch {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  width: 50px;
+  height: 44px;
+  font-size: 0;
+  text-indent: -9999px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  box-shadow: none;
+  border-radius: none;
+  border: none;
+  cursor: pointer;
+  -webkit-transition: background 0.5s;
+          transition: background 0.5s;
+}
+
+.cmn-toggle-switch:focus {
+  outline: none;
+}
+
+.cmn-toggle-switch__htx {
+  background-color: #000000;
+}
+
+.cmn-toggle-switch__htx span {
+  -webkit-transition: background 0;
+          transition: background 0;
+}
+
+.cmn-toggle-switch__htx span::before,
+.cmn-toggle-switch__htx span::after {
+  -webkit-transition-duration: 0.5s, 0.5s;
+          transition-duration: 0.5s, 0.5s;
+/*  -webkit-transition-delay: 0.5s, 0;
+          transition-delay: 0.5s, 0;*/
+}
+
+.cmn-toggle-switch__htx span::before {
+  -webkit-transition-property: top, -webkit-transform;
+          transition-property: top, transform;
+}
+
+.cmn-toggle-switch__htx span::after {
+  -webkit-transition-property: bottom, -webkit-transform;
+          transition-property: bottom, transform;
+}
+
+/* active state, i.e. menu open */
+.chat-room-list.expanded .cmn-toggle-switch__htx {
+  background-color: #1f1f1f;
+}
+
+.chat-room-list.expanded .cmn-toggle-switch__htx span {
+  background: none;
+}
+
+.chat-room-list.expanded .cmn-toggle-switch__htx span::before {
+  background: #ffffff;
+  top: 0;
+  -webkit-transform: rotate(45deg);
+      -ms-transform: rotate(45deg);
+          transform: rotate(45deg);
+}
+
+.chat-room-list.expanded .cmn-toggle-switch__htx span::after {
+  background: #ffffff;
+  bottom: 0;
+  -webkit-transform: rotate(-45deg);
+      -ms-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+}
+
+.chat-room-list.expanded .cmn-toggle-switch__htx span::before,
+.chat-room-list.expanded .cmn-toggle-switch__htx span::after {
+/*  -webkit-transition-delay: 0, 0.5s;
+          transition-delay: 0, 0.5s;*/
+}

@@ -1,7 +1,10 @@
 import React from 'react';
 import placeholder from 'images/avatar-placeholder.png';
 
+import firebase from 'controllers/FirebaseInitialize';
+import 'firebase/auth';
 import firebaseStorage from 'controllers/FirebaseStorage';
+import firebaseUserProvider from 'controllers/FirebaseUserProvider';
 
 export default class ChatHeaderUserInfo extends React.Component {
 
@@ -13,6 +16,11 @@ export default class ChatHeaderUserInfo extends React.Component {
 		if ( this.state.profileImage !== placeholder || 
 			user === undefined ||
 			user.profileImagePath === undefined ) return;
+		let url = firebaseUserProvider.usersProfileImagesURL[user.profileImagePath];
+		if ( url !== undefined ) {
+			this.setState({ profileImage: url });
+			return;	
+		}
 		firebaseStorage.getDownloadURL(user.profileImagePath, (url) => {
 			this.setState({ profileImage: url });
 		})
@@ -46,6 +54,9 @@ export default class ChatHeaderUserInfo extends React.Component {
 					<div className="profile-description ml-2">
 						<p>{ user.name }</p>
 						<p>{ user.description }</p>
+					</div>
+					<div className="profile-actions ml-2">
+						<p><button className="btn btn-light btn-sm" onClick={ () => { firebase.auth().signOut() } }>Выйти</button></p>
 					</div>
 				</div>
 	}
