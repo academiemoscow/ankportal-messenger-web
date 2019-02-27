@@ -160,7 +160,7 @@ body {
 .attachments-container {
     position: absolute;
     width: 100%;
-    height: 140px;
+    height: 150px;
     top: 0px;
     transition: all 0.5s ease;
     background: #f2f2f2;
@@ -170,6 +170,28 @@ body {
 .chat-room-input 
 .attachments-container input {
     display: none;
+}
+
+.chat-room-input
+.progress {
+    position: absolute;
+    width: 100%;
+    top: 0px;
+    height: 1px;
+    z-index: 999;
+}
+
+.chat-room-input 
+.attachments-container
+.attachment-card {
+    display: inline-block;
+    width: 130px;
+    height: 140px;
+    position: relative;
+    float: left;
+    overflow: hidden;
+    word-break: break-all;
+    padding: 10px;
 }
 
 .chat-room-input 
@@ -211,11 +233,9 @@ body {
 
 .chat-room-input 
 .attachments-container
-.attachments-group
+.attachment-card
 .label {
-    position: absolute;
-    top: 100%;
-    width: 100%;
+    width: 100px;
     font-size: 0.7em;
     word-break: break-word;
     text-align: center;
@@ -244,7 +264,22 @@ button.badge {
 
 .chat-room-input 
 .attachments-container.visible {
-    top: -140px;
+    top: -150px;
+}
+
+.chat-room-input 
+.attachments-container
+.close-btn {
+    display: none;
+    position: absolute;
+    right: 0px;
+    top: -38px;
+}
+
+.chat-room-input 
+.attachments-container.visible
+.close-btn {
+    display: block;
 }
 
 .chat-room-input .btn {

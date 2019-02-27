@@ -7,17 +7,25 @@ import firebaseMessagesObserver from 'controllers/FirebaseMessagesObserver';
 import Baron from 'react-baron/dist/es5';
 import 'react-baron/src/styles.css';
 
+import eventDispatcher from 'controllers/EventDispatcher';
+
 export default class ChatRoomList extends React.Component {
 
 	state = {
 		roomLastMessages: {},
-		selectedRoomId: null
+		selectedRoomId: null,
+		headerMessage: null
 	}
 
 	constructor(props) {
 		super(props);
+		eventDispatcher.subscribe(this);
 		this.firebaseDidRecieveNewMessage = this.firebaseDidRecieveNewMessage.bind(this);
 		this.returnHandlerSelectRoom = this.returnHandlerSelectRoom.bind(this);
+	}
+
+	hasError(error) {
+		console.log(error);
 	}
 
 	componentDidMount() {

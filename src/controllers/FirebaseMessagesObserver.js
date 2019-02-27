@@ -29,9 +29,10 @@ class FirebaseMessagesObserver {
 	}
 
 	tellObservers(messageToObservers) {
+		let args = Object.values(arguments).slice(1);
 		this.observers.forEach(function(element) {
 			if (typeof element[messageToObservers] === "function") {
-				element[messageToObservers](...arguments.slice(1));
+				element[messageToObservers](...args);
 			}
 		})
 	}

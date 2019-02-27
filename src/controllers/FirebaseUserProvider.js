@@ -29,7 +29,9 @@ class FirebaseUserProvider {
 	
 	getUserById(userid, callback = (user) => {}) {
 		if ( userid === undefined ) return;
-		if ( this.chatUsers[userid] !== undefined ) return this.chatUsers[userid];
+		if ( this.chatUsers[userid] !== undefined ) {
+			return callback(this.chatUsers[userid]);
+		}
 		let userRef = this.usersDatabaseRef.child(userid);
 		userRef.once('value', function(userSnapshot) {
 			callback(userSnapshot.val());

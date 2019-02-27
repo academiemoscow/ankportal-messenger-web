@@ -1,5 +1,7 @@
 import firebaseStorage from 'controllers/FirebaseStorage';
 
+import eventDispatcher from 'controllers/EventDispatcher';
+
 class FirebaseUploader {
 
 	tasks = [];
@@ -22,7 +24,7 @@ class FirebaseUploader {
 				firebaseFile.setProgress(progress);
 				uploadTask.progressHandler();
 			}, function(error) {
-
+				eventDispatcher.dispatch("hasError", error)
 			}, function() {
 				firUploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
 					firebaseFile.setDownloadUrl(downloadURL);
