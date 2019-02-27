@@ -75,7 +75,7 @@ class ChatRoomLog extends React.Component {
 
 	renderRoomInput = () => {
 		if ( this.props.roomId === null ) return;
-		return <ChatRoomInput />
+		return <ChatRoomInput roomId={ this.props.roomId }/>
 	}
 
 	render() {
