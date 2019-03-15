@@ -1,3 +1,9 @@
+import { connect } from 'react-redux';
+import { addAttachments,
+		 removeAttachments,
+		 setInputText,
+		 setInputFieldHeight } from 'redux/actions';
+
 import React from 'react';
 import Baron from 'react-baron/dist/es5';
 import { 
@@ -9,34 +15,69 @@ import Bubbling from 'components/Bubbling';
 
 import firebaseUploader from 'controllers/FirebaseUploader';
 import { UploadTask } from 'controllers/UploadTask';
+import { FirebaseMessage } from 'controllers/FirebaseMessageUploader';
+import firebaseMessageUploader from 'controllers/FirebaseMessageUploader';
+import firebaseUsers from 'controllers/FirebaseUserProvider';
 
-import eventDispatcher from 'controllers/EventDispatcher';
-
-export default class ChatRoomInput extends React.Component {
+class ChatRoomInput extends React.Component {
 
 	state = {
 		attachments 	: [],
 		sendingMessage 	: false,
-		sendingProgress	: 0
-	}
-
-	constructor(props) {
-		super(props);
-		eventDispatcher.subscribe(this);
-		this.hasError.bind(this);
-	}
-
-	hasError(error) {
-		this.setState({
-			sendingMessage	: false,
-			sendingProgress : 0
-		})
+		sendingProgress	: 0,
+		textareaValue   : ""
 	}
 
 	onTextareaTyping = (e) => {
+		this.props.setInputText(e.target.value);
+		let height = this.estimageTextAreaRowCount(e.target);
+		this.props.setInputFieldHeight(Math.min(height > 61 ? height : 61, 300));
 		if ( e.key === '\n' ) {
 			console.log("send...");
 		}
+		this.userIsTyping();
+	}
+
+	userIsTyping() {
+		if ( this.userTypingTimeoutId !== undefined ) clearTimeout(this.userTypingTimeoutId);
+		let userDatabaseRef = firebaseUsers.getReferenceForCurrentUid();
+		userDatabaseRef.update({typingRoomId : this.props.roomId});
+		this.userTypingTimeoutId = setTimeout(function() { 
+			userDatabaseRef.update({typingRoomId : ""}); 
+		}, 3000);
+	}
+
+	measureText(pText, pFontSize, pStyle) {
+	    let lDiv = document.createElement('div');
+
+	    document.getElementById('root').appendChild(lDiv);
+
+	    if (pStyle != null) {
+	        lDiv.style = pStyle;
+	    }
+	    lDiv.style.fontSize = "" + pFontSize + "px";
+	    lDiv.className = "get-height-for-text-div";
+
+	    lDiv.innerHTML = pText;
+	    var lResult = {
+	        width: lDiv.clientWidth,
+	        height: lDiv.clientHeight
+	    };
+	    document.getElementById('root').removeChild(lDiv);
+
+	    lDiv = null;
+
+	    return lResult;
+	}
+
+	estimageTextAreaRowCount = (textarea) => {
+		let textareaWidth = textarea.getBoundingClientRect().width;
+		let textHeight = this.measureText(
+			textarea.value, 
+			'1rem', 
+			'line-height: 25px; width: ' + textareaWidth + 'px; padding: .375rem .75rem;'
+		).height;
+		return textHeight;
 	}
 
 	attachFilesHandler = () => {
@@ -46,11 +87,12 @@ export default class ChatRoomInput extends React.Component {
 	attachmentsChange = (e) => {
 		let files = this.refs.attachmentsHolder.files;
 		if ( files === undefined ) return;
-		this.setState({ attachments: this.state.attachments.concat(Object.values(files)) });
+		this.props.addAttachments(Object.values(files));
+		this.refs.attachmentsHolder.value = "";
 	}
 
 	getAttachContainerClasses = () => {
-		if ( this.state.attachments.length > 0 ) {
+		if ( this.props.attachments.length > 0 ) {
 			return "attachments-container visible";
 		}
 		return "attachments-container";
@@ -58,9 +100,7 @@ export default class ChatRoomInput extends React.Component {
 
 	getRemoveAttachFunction = (elem) => {
 		return function() {
-			this.setState({
-				attachments: this.state.attachments.filter(function(attach) { return attach !== elem })
-			});
+			this.props.removeAttachments([elem]);
 		}
 	}
 
@@ -78,7 +118,7 @@ export default class ChatRoomInput extends React.Component {
 
 	renderAttachments = () => {
 		let attachmentViews = [];
-		this.state.attachments.forEach(function(element, index) {
+		this.props.attachments.forEach(function(element, index) {
 			let attachmentElement = (
 				<div 
 					key 		= {index} 
@@ -97,35 +137,61 @@ export default class ChatRoomInput extends React.Component {
 		return attachmentViews;
 	}
 
-	sendHandler = () => {
-		if ( this.state.attachments.length === 0 && this.refs.inputTextArea.value === "" ) return;
-		this.setState({ 
-			sendingMessage : true,
-			sendingProgress: 0 });
-		let uploadTask = new UploadTask();
+	uploadAttachments = (onComplete = () => {}) => {
+		let uploadTask = new UploadTask(this.props.roomId);
+
+		if ( this.state.attachments.length === 0 ) {
+			return onComplete(this.props.roomId);
+		}
+
+		uploadTask.onComplete = ((roomId, firebaseFiles) => {
+			onComplete(roomId, firebaseFiles);
+		});
+
+		uploadTask.onProgress = ((roomId, progress) => {
+			this.setState({ sendingProgress: progress });
+		});
+
+		uploadTask.onError = ((roomId, error) => {
+			this.setState({
+				sendingMessage	: false,
+				sendingProgress : 0
+			})
+		});
+
 		this.state.attachments.forEach(function(file) {
 
 			uploadTask.addFile(
 				file,
-				this.getStorageRefForFile(file),
-				function(firebaseFiles) {
-					this.setState({
-						sendingMessage: false,
-						attachments   : []
-					});
-					console.log(firebaseFiles);
-				}.bind(this),
-				function(progress) {
-					this.setState({ sendingProgress: progress });
-				}.bind(this)
-				)
+				this.getStorageRefForFile(uploadTask.roomId, file)
+			)
 
 		}.bind(this));
 		firebaseUploader.runTask(uploadTask);
 	}
 
-	getStorageRefForFile(file) {
-		return `${ this.props.roomId }/${ (new Date()).valueOf() } ${ file.name }`; 
+	sendHandler = () => {
+		if ( this.state.attachments.length === 0 && this.refs.inputTextArea.value === "" ) return;
+		this.setState({ 
+			sendingMessage : true,
+			sendingProgress: 0 });
+
+		this.uploadAttachments(function(roomId, firebaseFiles) {
+			let text = this.refs.inputTextArea.value;
+			let message = FirebaseMessage.textMessage(text, roomId);
+			let ref = firebaseMessageUploader.getNewMessageRef(roomId);
+			message.messageId = ref.key;
+			ref.set(message, function() {
+				this.setState({
+					sendingMessage: false,
+					attachments   : []
+				});
+			}.bind(this));
+		}.bind(this));
+	}
+
+	getStorageRefForFile(roomId, file) {
+		return `${ roomId }/${ (new Date()).valueOf() } ${ file.name }`; 
 	}
 
 	renderProgressBar = () => {
@@ -138,10 +204,11 @@ export default class ChatRoomInput extends React.Component {
 	}
 
 	deleteAllAttachmentsBtn = () => {
-		this.setState({ attachments: [] });
+		this.props.removeAttachments(this.props.attachments);
 	}
 
 	render() {
+		const inputHeight = this.props.roomInputHeight
 		return (
 			<div className="chat-room-input border-top">
 				{ this.renderProgressBar() }
@@ -157,22 +224,28 @@ export default class ChatRoomInput extends React.Component {
 						{ this.renderAttachments() }
 					</Baron>
 				</div>
-				<div className="input-group">
-					<div className="input-group-prepend">
-						<button className 	= "shadow btn btn-dark rounded-0 border-bottom-0 border-left-0 border-right border-top-0"
+				<div 	className 	= "input-group bg-gradient" 
+						style 		= { { height: inputHeight } }
+						ref 		= "inputGroup">
+					<div className="input-group-prepend mt-auto">
+						<button className 	= "shadow btn btn-dark rounded-0 border-0"
 								type 		= "button" 
 								id 			= "button-addon2"
 								onClick 	= { this.attachFilesHandler }> <FaFileImage size="1.5em" />
 						</button>
 					</div>
-					<textarea 	className   = "form-control border-0" 
-								aria-label  = "With textarea" 
-								placeholder = "Введите здесь сообщение..."
-								ref 		= "inputTextArea"
-								onKeyPress	= { this.onTextareaTyping }>
-					</textarea>
-					<div className="input-group-append">
-						<button className	= "shadow btn btn-primary rounded-0 border-bottom-0 border-left border-right-0 border-top-0" 
+					<div className   = "form-control border-0 p-0 area-container bg-gradient">
+						<textarea 	className   = "form-control border-0" 
+									style       = { { overflow: inputHeight < 300 ? "hidden" : "auto" } }
+									aria-label  = "With textarea" 
+									placeholder = "Введите здесь сообщение..."
+									ref 		= "inputTextArea"
+									onChange 	= { this.onTextareaTyping }
+									value       = { this.props.roomInputText }>
+						</textarea>
+					</div>
+					<div className="input-group-append mt-auto">
+						<button className	= "shadow btn btn-primary rounded-0 border-0" 
 								type		= "button" 
 								id 			= "button-addon2"
 								onClick 	= { this.sendHandler }
@@ -185,3 +258,21 @@ export default class ChatRoomInput extends React.Component {
 			);
 	}
 }
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  addAttachments: (attachments) => dispatch(addAttachments(ownProps.roomId, attachments)),
+  removeAttachments: (attachments) => dispatch(removeAttachments(ownProps.roomId, attachments)),
+  setInputText: (text) => dispatch(setInputText(ownProps.roomId, text)),
+  setInputFieldHeight: (height) => dispatch(setInputFieldHeight(ownProps.roomId, height))
+})
+
+const mapStateToProps = (state, ownProps) => ({
+  attachments  	 : !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].attachments ? [] : state.roomInputState[ownProps.roomId].attachments,
+  roomInputText  : !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].roomInputText ? "" : state.roomInputState[ownProps.roomId].roomInputText,
+  roomInputHeight: !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].roomInputHeight ? 61 : state.roomInputState[ownProps.roomId].roomInputHeight
+})
+
+export default connect(
+	mapStateToProps,
+	mapDispatchToProps
+)(ChatRoomInput);

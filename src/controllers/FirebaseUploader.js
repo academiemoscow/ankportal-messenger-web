@@ -24,7 +24,8 @@ class FirebaseUploader {
 				firebaseFile.setProgress(progress);
 				uploadTask.progressHandler();
 			}, function(error) {
-				eventDispatcher.dispatch("hasError", error)
+				eventDispatcher.dispatch("hasError", error);
+				uploadTask.onError(error);
 			}, function() {
 				firUploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
 					firebaseFile.setDownloadUrl(downloadURL);

@@ -26,18 +26,25 @@ export class UploadTask {
 	firebaseFiles 		= [];
 	uploadedFilesCount 	= 0;
 
+	constructor(roomId) {
+		this.roomId = roomId;
+	}
+
 	addFile(file, storageRefPath, onComplete, onProgress) {
 		let firebaseFile 			= new FirebaseFile();
 		firebaseFile.file 			= file;
 		firebaseFile.storageRefPath = storageRefPath;
 		this.firebaseFiles.push(firebaseFile);
-		this.onComplete = onComplete;
-		this.onProgress = onProgress;
 	}
 
 	completeHandler() {
 		if ( typeof this.onComplete !== 'function' ) return;
-		this.onComplete(this.firebaseFiles);
+		this.onComplete(this.roomId, this.firebaseFiles);
+	}
+
+	onError(error) {
+		if ( typeof this.onError !== 'function' ) return;
+		this.onError(this.roomId, error);
 	}
 
 	fileUploaded(file) {
@@ -59,7 +66,7 @@ export class UploadTask {
 
 	progressHandler() {
 		if ( typeof this.onProgress !== 'function' ) return;
-		this.onProgress(this.currentProgress());
+		this.onProgress(this.roomId, this.currentProgress());
 	}
 
 }

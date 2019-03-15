@@ -10,8 +10,8 @@ import firebaseUserProvider from 'controllers/FirebaseUserProvider';
 
 class Chat extends React.Component {
 
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
 		this.state = {
 			isLoggedIn: !!firebase.auth().currentUser
 			// isLoggedIn: true

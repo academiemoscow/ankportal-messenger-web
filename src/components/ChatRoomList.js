@@ -7,32 +7,43 @@ import firebaseMessagesObserver from 'controllers/FirebaseMessagesObserver';
 import Baron from 'react-baron/dist/es5';
 import 'react-baron/src/styles.css';
 
-import eventDispatcher from 'controllers/EventDispatcher';
+import soundNewMessage from 'sounds/new_message.mp3';
+import { DateNumber } from 'helpers/helpers';
 
 export default class ChatRoomList extends React.Component {
 
 	state = {
 		roomLastMessages: {},
-		selectedRoomId: null,
-		headerMessage: null
+		selectedRoomId: null
 	}
+
+	newMessageSound = (() => {
+		let audio = new Audio();
+		audio.preload = 'auto';
+		audio.src = soundNewMessage;
+		return audio
+	})()
 
 	constructor(props) {
 		super(props);
-		eventDispatcher.subscribe(this);
 		this.firebaseDidRecieveNewMessage = this.firebaseDidRecieveNewMessage.bind(this);
+		this.firebaseDidUpdateMessage = this.firebaseDidUpdateMessage.bind(this);
 		this.returnHandlerSelectRoom = this.returnHandlerSelectRoom.bind(this);
 	}
 
-	hasError(error) {
-		console.log(error);
-	}
-
 	componentDidMount() {
+		this.didMountTimestamp = DateNumber.secondsSince1970();
 		firebaseMessagesObserver.addObserver(this);
 	}
 
+	firebaseDidUpdateMessage(message) {
+		this.forceUpdate();
+	}
+
 	firebaseDidRecieveNewMessage(message) {
+		if ( message.timestamp >= this.didMountTimestamp ) {
+			this.newMessageSound.play();
+		}
 		let chatRoomLastMessage = {};
 		chatRoomLastMessage[message.chatRoomId] = message;
 		this.setState({ 
@@ -47,7 +58,7 @@ export default class ChatRoomList extends React.Component {
 			expanded: false 
 		}
 		if ( elem !== undefined ) {
-			state.selectedRoomId = elem.props.chatRoomId;	
+			state.selectedRoomId = elem.props.message.chatRoomId;	
 		}
 		return function() {
 			context.setState(state);
@@ -56,17 +67,21 @@ export default class ChatRoomList extends React.Component {
 
 	createRoomList = () => {
 		let divList = [];
-		let roomIdArray = Object.keys(this.state.roomLastMessages);
+		let roomIdArray = Object.keys(this.state.roomLastMessages)
+							.sort((roomId1, roomId2) => {
+								const message1 = this.state.roomLastMessages[roomId1],
+									  message2 = this.state.roomLastMessages[roomId2];
+								return message2.timestamp - message1.timestamp;
+							});
 
 		for (let i = 0; i < roomIdArray.length; i++) {
 			let message = this.state.roomLastMessages[roomIdArray[i]];
 			divList.push(
 				<ChatRoomListElement
 					key				=	{ message.chatRoomId } 
-					messageText		=	{ message.text } 
-					timestamp		=	{ message.timestamp }
-					chatRoomId 		=	{ message.chatRoomId }
-					selectedRoomId 	=	{ this.state.selectedRoomId }
+					message			=	{ message } 
+					unreadCount 	=   { firebaseMessagesObserver.unreadCountFor(message.chatRoomId) }
+					selectedRoomId  =   { this.state.selectedRoomId }
 					onClick			=	{ this.returnHandlerSelectRoom }
 				/>
 			)
