@@ -4,6 +4,7 @@ import 'firebase/database';
 import 'firebase/auth';
 
 import { imageUrlDidLoaded } from 'redux/actions';
+import firebaseMessageUploader from 'controllers/FirebaseMessageUploader';
 
 class FirebaseMessagesObserver {
 
@@ -30,6 +31,11 @@ class FirebaseMessagesObserver {
 				this.observeForNewMessages();
 			}
 		}
+	}
+
+	addCurrentUserToRoom(roomId) {
+		let ref = firebase.database().ref(`room-user/${roomId}/${firebase.auth().currentUser.uid}`);
+		firebaseMessageUploader.addUpdateTask(ref, {userId: firebase.auth().currentUser.uid});	
 	}
 
 	constructor() {
@@ -87,9 +93,10 @@ class FirebaseMessagesObserver {
 		this.messageRef.on('child_added', function(roomSnapshot) {
 			if (typeof this.messages[roomSnapshot.key] === "undefined") {
 				this.messages[roomSnapshot.key] = [];
+				this.addCurrentUserToRoom(roomSnapshot.key);
 			}
 			const roomRef = firebase.database().ref(`messages/${roomSnapshot.key}`);
-			roomRef.on('child_added', function(roomMessagesSnapshot) {
+			roomRef.limitToLast(10).on('child_added', function(roomMessagesSnapshot) {
 				this.newMessageHandler(roomMessagesSnapshot)	
 			}, this);
 

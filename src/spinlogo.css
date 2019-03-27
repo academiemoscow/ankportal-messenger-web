@@ -1,0 +1,36 @@
+.preloader-screen {
+	perspective: 150px;
+}
+
+.preloader-screen img {
+	transform-style: preserve-3d;
+	perspective-origin: 10% 10%;
+	animation: logo-animations 2.3s infinite ease;
+		-o-animation: logo-animations 2.3s infinite ease;
+		-ms-animation: logo-animations 2.3s infinite ease;
+		-webkit-animation: logo-animations 2.3s infinite ease;
+		-moz-animation: logo-animations 2.3s infinite ease;
+}
+
+
+@keyframes logo-animations {
+	0% {
+		transform: rotate3d(0, 0, 0, 0deg);
+	}
+	
+	25% {
+		transform: rotate3d(0, 0, 1, 360deg);
+	}
+	
+	50% {
+		transform: rotate3d(1, 0, 0, 180deg);
+	}
+	
+	75% {
+		transform: rotate3d(0, 1, 0, 180deg);
+	}
+	
+	100% {
+		transform: rotate3d(0, 0, 0, 0deg);
+	}
+}

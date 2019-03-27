@@ -619,5 +619,13 @@ module.exports = function(webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+
+    devServer: {
+      https: {
+          key: fs.readFileSync('C:/NodeDev/ankportal-chat-web/src/ssl/localhost-key.pem'),
+          cert: fs.readFileSync('C:/NodeDev/ankportal-chat-web/src/ssl/localhost.pem'),
+          ca: fs.readFileSync('C:/Users/podolskiit/AppData/Local/mkcert/rootCA-key.pem')
+      }
+    },
   };
 };

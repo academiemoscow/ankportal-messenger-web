@@ -1,3 +1,6 @@
+import { connect } from 'react-redux';
+import { changeRoom } from 'redux/actions';
+
 import React from 'react';
 import ChatRoomListElement from 'components/ChatRoomListElement';
 import ChatRoomLog from 'components/ChatRoomLog';
@@ -10,11 +13,12 @@ import 'react-baron/src/styles.css';
 import soundNewMessage from 'sounds/new_message.mp3';
 import { DateNumber } from 'helpers/helpers';
 
-export default class ChatRoomList extends React.Component {
+import Spinner from 'components/Spinner';
+
+class ChatRoomList extends React.Component {
 
 	state = {
-		roomLastMessages: {},
-		selectedRoomId: null
+		roomLastMessages: {}
 	}
 
 	newMessageSound = (() => {
@@ -41,7 +45,10 @@ export default class ChatRoomList extends React.Component {
 	}
 
 	firebaseDidRecieveNewMessage(message) {
-		if ( message.timestamp >= this.didMountTimestamp ) {
+		if ( message.timestamp >= this.didMountTimestamp && 
+			 ( this.props.selectedRoomId !== message.chatRoomId || document.hidden ) ) {
+
+			this.newMessageSound.load();
 			this.newMessageSound.play();
 		}
 		let chatRoomLastMessage = {};
@@ -54,18 +61,18 @@ export default class ChatRoomList extends React.Component {
 	returnHandlerSelectRoom(elem) {
 		let context = this;
 		let state = { 
-			selectedRoomId: null,
 			expanded: false 
-		}
-		if ( elem !== undefined ) {
-			state.selectedRoomId = elem.props.message.chatRoomId;	
 		}
 		return function() {
 			context.setState(state);
+			if ( elem !== undefined ) {
+				context.props.changeRoom(elem.props.message.chatRoomId)
+			}
 		}
 	}
 
 	createRoomList = () => {
+
 		let divList = [];
 		let roomIdArray = Object.keys(this.state.roomLastMessages)
 							.sort((roomId1, roomId2) => {
@@ -81,7 +88,7 @@ export default class ChatRoomList extends React.Component {
 					key				=	{ message.chatRoomId } 
 					message			=	{ message } 
 					unreadCount 	=   { firebaseMessagesObserver.unreadCountFor(message.chatRoomId) }
-					selectedRoomId  =   { this.state.selectedRoomId }
+					selectedRoomId  =   { this.props.selectedRoomId }
 					onClick			=	{ this.returnHandlerSelectRoom }
 				/>
 			)
@@ -91,7 +98,7 @@ export default class ChatRoomList extends React.Component {
 	}
 
 	renderRoomLog = () => {
-		return <ChatRoomLog roomId={ this.state.selectedRoomId } />
+		return <ChatRoomLog roomId={ this.props.selectedRoomId } />
 	}
 
 	toggleRoomList = () => {
@@ -118,7 +125,7 @@ export default class ChatRoomList extends React.Component {
 					</div>
 					<Baron>
 						<div>
-							{ this.createRoomList() }
+							{ Object.keys(this.state.roomLastMessages).length > 0 ? this.createRoomList() : <div className="spinner"><Spinner /></div> }
 						</div>
 					</Baron>
 				</div>
@@ -127,3 +134,16 @@ export default class ChatRoomList extends React.Component {
 		);
 	}
 }
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  changeRoom: (roomId) => dispatch(changeRoom(roomId))
+})
+
+const mapStateToProps = (state, ownProps) => ({
+  selectedRoomId  	 : state.chatState.currentRoomId ? state.chatState.currentRoomId : null
+})
+
+export default connect(
+	mapStateToProps,
+	mapDispatchToProps
+)(ChatRoomList);

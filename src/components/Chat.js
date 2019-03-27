@@ -7,6 +7,10 @@ import FirebaseLoginUI from 'controllers/FirebaseLoginUI';
 import 'firebase/auth';
 
 import firebaseUserProvider from 'controllers/FirebaseUserProvider';
+import firebasePushMessaging from 'controllers/FirebasePushMessaging';
+
+import logo from 'images/LogoANK.png';
+import 'spinlogo.css';
 
 class Chat extends React.Component {
 
@@ -38,6 +42,7 @@ class Chat extends React.Component {
 		if (!user) return;
 		firebaseUserProvider.getUserById(user.uid, (user) => { 
 			this.setState({ currentUser: user });
+			firebasePushMessaging.requestPermission();
 		});
 	}
 
@@ -52,8 +57,7 @@ class Chat extends React.Component {
 			return (
 				<div className="preloader-screen">
 					<div>
-						<img alt="ank logo" src="https://ankportal.ru/local/templates/main/images/logo.png"/>
-						<span className="cssload-loader"><span className="cssload-loader-inner"></span></span>
+						<img alt="ank logo" src={ logo }/>
 					</div>
 				</div>
 			);	

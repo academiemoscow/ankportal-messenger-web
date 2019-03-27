@@ -1,5 +1,13 @@
 export const roomInput = (state = [], action) => {
   switch (action.type) {
+    case 'SET_ROOM_STATE':
+      return {
+        ...state,
+        [action.roomId] : {
+          ...state[action.roomId],
+          ...action.roomState
+        }
+      }
     case 'ADD_ATTACHMENT':
       return {
         ...state,
@@ -47,6 +55,18 @@ export const imageDownload = (state = [], action) => {
       return {
         ...state,
         [action.pathToImage] : action.url
+      }
+    default:
+      return state
+  }
+}
+
+export const chatStateReducer = (state = [], action) => {
+  switch (action.type) {
+    case 'CHANGE_ROOM':
+      return {
+        ...state,
+        currentRoomId : action.chatRoomId
       }
     default:
       return state

@@ -11,7 +11,7 @@ export default class ChatHeaderUserInfo extends React.Component {
 	state = {
 		profileImage: placeholder
 	}
-
+	
 	updateProfileImageFromStorage = (user) => {
 		if ( this.state.profileImage !== placeholder || 
 			user === undefined ||

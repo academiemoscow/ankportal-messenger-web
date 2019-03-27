@@ -16,6 +16,12 @@ body {
 	overflow-y: hidden;
 }
 
+.chat-room-list-container
+.spinner {
+    margin-top: 20px;
+    text-align: center;
+}
+
 .preloader-screen {
 	height: 100%;
     text-align: center;
@@ -84,7 +90,7 @@ body {
 }
 
 .chat-room-list {
-    background: url(images/full-bloom.png);
+    background: url(images/tic-tac-toe.png);
 }
 
 .chat-room-list-expand {
@@ -97,6 +103,7 @@ body {
 }
 
 @media all and (max-width: 576px) {
+
      .chat-room-list { 
      	height: 0px; 
      	transition: height 0.5s ease;
@@ -141,12 +148,16 @@ body {
 
 .chat-room-log-container
 .header-message {
-    position: absolute;
     padding: 10px;
-    right: 0px;
-    top: -100%;
+    width: 100%;
+    animation: translateFromTop 1s ease-in-out;
+}
+
+.system-messages {
+    width: 40%;
+    position: absolute;
     z-index: 999;
-    transition: all 0.5s ease;
+    right: 2%;
 }
 
 .chat-room-log-container
@@ -168,6 +179,7 @@ body {
 }
 
 .chat-room-log {
+    position: relative;
     width: 100%;
     height: 100%;
     word-wrap: break-word;   
@@ -184,10 +196,47 @@ body {
 }
 
 .chat-room-messages {
+    /*background: url(images/LogoANK.png);*/
+    background: url(images/full-bloom.png);
     height: 100%;
     padding-bottom: 61px;
     margin-bottom: -61px;
     transition: all 0.1s ease;
+}
+
+.wrapper.current-date
+.chat-room-log-d-label {
+    opacity: 0;
+}
+
+.wrapper.current-date.visible
+.chat-room-log-d-label {
+    opacity: 0.6;
+}
+
+.chat-room-log-d-label {
+    position: static;
+    position: sticky;
+    top: 5px;
+    opacity: 0.6;
+    margin-top: 5px;
+    transition: all 0.4s ease;
+    z-index: 990;
+}
+
+.chat-room-log-d-label
+.inner-date-container {
+    position: relative;
+    left: 0px;
+    transition: all 0.5s ease;
+}
+
+.wrapper.current-date
+.inner-date-container {
+/*    left: 50px;
+    top: -5px;*/
+/*    border-radius: 0px 0px 10rem 10rem;
+    background-color: #343a40;*/
 }
 
 .chat-room-input {
@@ -220,6 +269,7 @@ body {
     top: -150px;
     background: #f2f2f2;
     box-shadow: inset 0px 1px 3px rgba(0,0,0,.175);
+    z-index: 991;
 }
 
 .chat-room-input 
@@ -388,7 +438,8 @@ button.badge {
 	margin: 0px;
 }
 
-.chat-room-list-element p:first-child {
+.chat-room-list-element
+p.title {
     font-weight: bold;
     color: #2f2f2f;
     font-size: 0.9rem;
@@ -398,12 +449,23 @@ button.badge {
     position: absolute;
     right: 10px;
     top: 10px;
-    font-style: italic;
     font-size: 0.8rem;
     color: gray;
 }
 
+.chat-room-list-element
+.profile-avatar {
+    float: left;
+    margin-right: 10px;
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
 .chat-room-log-message {
+    cursor: pointer;
 	display: inline-block;
 	max-width: 100%;
 	min-width: 50px;
@@ -411,10 +473,19 @@ button.badge {
     border-radius: 10px;
     box-shadow: 0px 0px 3px 0px #bbbbbb;
     background: #ffffff;
+    white-space: pre-wrap;
 }
 
 .chat-room-log-message img {
     cursor: pointer;
+}
+
+.message-image {
+    height: 200px;
+    width: 200px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 50%;
 }
 
 .chat-message-outgoing {
@@ -427,7 +498,7 @@ button.badge {
 }
 
 .chat-message-outgoing .chat-room-log-message {
-	background: #000000;
+	background: #343a40;
 	color: #ffffff;
 }
 
@@ -444,4 +515,44 @@ button.badge {
     top: -1000px;
     word-break: break-word;
     white-space: pre-wrap;
+}
+
+.message-status-icon {
+    color: #9fa4a9;
+    display: inline-block;
+    float: right;
+}
+
+.message-status-container {
+    display: inline-block;
+    float: right;
+}
+
+.message-status-timestamp {
+    color: #9fa4a9;
+    display: inline-block;
+    float: right;
+    margin-left: 10px;
+    font-size: 0.9em;    
+    line-height: 24px;
+}
+
+.bg-white-no-opacity > div {
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+.toast-body {
+    word-break: break-all;
+}
+
+.gradient {
+    width: 100%;
+    height: 5%;
+    position: absolute;
+    background: black;
+    z-index: 980;
+    background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 15%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,1) 15%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,1) 15%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
 }

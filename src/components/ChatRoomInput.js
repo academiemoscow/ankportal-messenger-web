@@ -2,7 +2,8 @@ import { connect } from 'react-redux';
 import { addAttachments,
 		 removeAttachments,
 		 setInputText,
-		 setInputFieldHeight } from 'redux/actions';
+		 setInputFieldHeight,
+		 setRoomState } from 'redux/actions';
 
 import React from 'react';
 import Baron from 'react-baron/dist/es5';
@@ -32,10 +33,14 @@ class ChatRoomInput extends React.Component {
 		this.props.setInputText(e.target.value);
 		let height = this.estimageTextAreaRowCount(e.target);
 		this.props.setInputFieldHeight(Math.min(height > 61 ? height : 61, 300));
-		if ( e.key === '\n' ) {
-			console.log("send...");
-		}
 		this.userIsTyping();
+	}
+
+	onKeyPress = (e) => {
+		if ( e.key === 'Enter' && !e.shiftKey ) {
+			e.preventDefault();
+			this.sendHandler();
+		}
 	}
 
 	userIsTyping() {
@@ -140,7 +145,7 @@ class ChatRoomInput extends React.Component {
 	uploadAttachments = (onComplete = () => {}) => {
 		let uploadTask = new UploadTask(this.props.roomId);
 
-		if ( this.state.attachments.length === 0 ) {
+		if ( this.props.attachments.length === 0 ) {
 			return onComplete(this.props.roomId);
 		}
 
@@ -149,17 +154,17 @@ class ChatRoomInput extends React.Component {
 		});
 
 		uploadTask.onProgress = ((roomId, progress) => {
-			this.setState({ sendingProgress: progress });
+			this.props.setRoomState({ sendingProgress: progress });
 		});
 
 		uploadTask.onError = ((roomId, error) => {
-			this.setState({
+			this.props.setRoomState({
 				sendingMessage	: false,
 				sendingProgress : 0
 			})
 		});
 
-		this.state.attachments.forEach(function(file) {
+		this.props.attachments.forEach(function(file) {
 
 			uploadTask.addFile(
 				file,
@@ -170,23 +175,46 @@ class ChatRoomInput extends React.Component {
 		firebaseUploader.runTask(uploadTask);
 	}
 
+	sendMessage = (roomId, messageProps, onComplete = () => {}) => {
+		const ref = firebaseMessageUploader.getNewMessageRef(roomId);
+		const defaultMessage = FirebaseMessage.getMessageFor(roomId);
+		const message = {
+			...defaultMessage,
+			...messageProps,
+			messageId : ref.key
+		}
+		firebaseMessageUploader.addUpdateTask(ref, message);
+	}
+
 	sendHandler = () => {
-		if ( this.state.attachments.length === 0 && this.refs.inputTextArea.value === "" ) return;
-		this.setState({ 
+		if ( this.props.attachments.length === 0 && this.refs.inputTextArea.value === "" ) return;
+		this.props.setRoomState({ 
 			sendingMessage : true,
 			sendingProgress: 0 });
 
 		this.uploadAttachments(function(roomId, firebaseFiles) {
-			let text = this.refs.inputTextArea.value;
-			let message = FirebaseMessage.textMessage(text, roomId);
-			let ref = firebaseMessageUploader.getNewMessageRef(roomId);
-			message.messageId = ref.key;
-			ref.set(message, function() {
-				this.setState({
-					sendingMessage: false,
-					attachments   : []
-				});
-			}.bind(this));
+
+            if ( firebaseFiles ) {
+				firebaseFiles.forEach(file => {
+					this.sendMessage(roomId, {
+						pathToImage: file.storageRefPath
+					})
+				})
+            }
+
+			const messageText = this.refs.inputTextArea.value;
+
+			this.props.setRoomState({
+				sendingMessage  : false,
+				attachments     : [],
+				roomInputText   : '',
+				roomInputHeight : 61
+			});
+
+			if ( !messageText || messageText === '' ) return;
+			this.sendMessage(roomId, {
+					text: messageText
+			})
 		}.bind(this));
 	}
 
@@ -195,10 +223,10 @@ class ChatRoomInput extends React.Component {
 	}
 
 	renderProgressBar = () => {
-		if ( !this.state.sendingMessage ) return;
+		if ( !this.props.sendingMessage ) return;
 		return (
 			<div className="progress">
-				<div className="progress-bar bg-info" style={{ width: this.state.sendingProgress + '%' }}></div>
+				<div className="progress-bar bg-info" style={{ width: this.props.sendingProgress + '%' }}></div>
 			</div>
 		)
 	}
@@ -215,6 +243,7 @@ class ChatRoomInput extends React.Component {
 				<div className={ this.getAttachContainerClasses() }>
 					<input 	type	 = "file" 
 							id 		 = "file" 
+							accept   = "image/*"
 							ref 	 = "attachmentsHolder"
 							onChange = { this.attachmentsChange.bind(this) }
 							multiple />
@@ -238,9 +267,10 @@ class ChatRoomInput extends React.Component {
 						<textarea 	className   = "form-control border-0" 
 									style       = { { overflow: inputHeight < 300 ? "hidden" : "auto" } }
 									aria-label  = "With textarea" 
-									placeholder = "Введите здесь сообщение..."
+									placeholder = "Сообщение..."
 									ref 		= "inputTextArea"
 									onChange 	= { this.onTextareaTyping }
+									onKeyPress  = { this.onKeyPress }
 									value       = { this.props.roomInputText }>
 						</textarea>
 					</div>
@@ -249,7 +279,7 @@ class ChatRoomInput extends React.Component {
 								type		= "button" 
 								id 			= "button-addon2"
 								onClick 	= { this.sendHandler }
-								disabled 	= { this.state.sendingMessage ? "disabled" : "" }> 
+								disabled 	= { this.props.sendingMessage ? "disabled" : "" }> 
 								{ this.state.sendingMessage ? <Bubbling /> : <FaFeather size="1.5em" /> }
 						</button>
 					</div>
@@ -263,13 +293,16 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
   addAttachments: (attachments) => dispatch(addAttachments(ownProps.roomId, attachments)),
   removeAttachments: (attachments) => dispatch(removeAttachments(ownProps.roomId, attachments)),
   setInputText: (text) => dispatch(setInputText(ownProps.roomId, text)),
-  setInputFieldHeight: (height) => dispatch(setInputFieldHeight(ownProps.roomId, height))
+  setInputFieldHeight: (height) => dispatch(setInputFieldHeight(ownProps.roomId, height)),
+  setRoomState: (roomState) => dispatch(setRoomState(ownProps.roomId, roomState))
 })
 
 const mapStateToProps = (state, ownProps) => ({
   attachments  	 : !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].attachments ? [] : state.roomInputState[ownProps.roomId].attachments,
   roomInputText  : !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].roomInputText ? "" : state.roomInputState[ownProps.roomId].roomInputText,
-  roomInputHeight: !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].roomInputHeight ? 61 : state.roomInputState[ownProps.roomId].roomInputHeight
+  roomInputHeight: !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].roomInputHeight ? 61 : state.roomInputState[ownProps.roomId].roomInputHeight,
+  sendingMessage: !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].sendingMessage ? false : state.roomInputState[ownProps.roomId].sendingMessage,
+  sendingProgress: !state.roomInputState[ownProps.roomId] || !state.roomInputState[ownProps.roomId].sendingProgress ? 0 : state.roomInputState[ownProps.roomId].sendingProgress
 })
 
 export default connect(

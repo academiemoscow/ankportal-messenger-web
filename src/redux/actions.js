@@ -1,3 +1,9 @@
+export const setRoomState = (roomId, roomState) => ({
+  type: 'SET_ROOM_STATE',
+  roomId,
+  roomState
+})
+
 export const addAttachments = (roomId, attachments) => ({
   type: 'ADD_ATTACHMENT',
   roomId,
@@ -26,4 +32,9 @@ export const imageUrlDidLoaded = (pathToImage, url) => ({
   type: 'IMAGE_DID_LOADED',
   pathToImage,
   url
+})
+
+export const changeRoom = (chatRoomId) => ({
+  type: 'CHANGE_ROOM',
+  chatRoomId
 })
