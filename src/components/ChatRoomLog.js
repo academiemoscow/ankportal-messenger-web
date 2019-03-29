@@ -39,16 +39,27 @@ class ChatRoomLog extends React.Component {
 		let headerMessage = {
 			type	: "ERROR",
 			cls   	: "error",
-			h 		: "Ошибка #" + error.code,
+			h 		: "Ошибка # " + error.code,
 			message : error.message
 		}
 		this.setState({ 
 			headerMessages 	: this.state.headerMessages.concat(headerMessage)
 		});
+
+		this.handleMessageLifetime(error, headerMessage);
+	}
+
+	handleMessageLifetime(message, headerMessage) {
+		clearTimeout(this.headerMessageTimeoutId);
+
+		if ( message.lifetime )
+			headerMessage.headerMessageTimeoutId = setTimeout(
+				this.eraseHeaderMessage(headerMessage).bind(this),
+				message.lifetime
+			)
 	}
 
 	hasMessage(message) {
-		clearTimeout(this.headerMessageTimeoutId);
 		let headerMessage = {
 			type	: "MESSAGE",
 			cls   	: message.cls ? message.cls : "info-block",
@@ -59,12 +70,7 @@ class ChatRoomLog extends React.Component {
 			headerMessages 	: this.state.headerMessages.concat(headerMessage)
 		});
 
-		if ( message.lifetime )
-			headerMessage.headerMessageTimeoutId = setTimeout(
-				this.eraseHeaderMessage(headerMessage).bind(this),
-				message.lifetime
-			)
-
+		this.handleMessageLifetime(message, headerMessage);
 	}
 
 	eraseHeaderMessage = (message) => {

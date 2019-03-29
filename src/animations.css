@@ -69,8 +69,8 @@
 
 @keyframes translateFromTop {
   0% {
-    -webkit-transform: translateY(-200%);
-    transform: translateY(-200%);
+    -webkit-transform: translateY(-2000%);
+    transform: translateY(-2000%);
     -webkit-transition-timing-function: ease-in;
     transition-timing-function: ease-in;
   }

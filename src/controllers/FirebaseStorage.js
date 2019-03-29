@@ -1,6 +1,8 @@
 import firebase from 'controllers/FirebaseInitialize';
 import 'firebase/storage';
 
+import eventDispatcher from 'controllers/EventDispatcher';
+
 class FirebaseStorage {
 
 	referencesToLoad = [];
@@ -87,6 +89,7 @@ class FirebaseStorage {
 				callback(url);
 			}.bind(this))
 			.catch(function(error) {
+				eventDispatcher.dispatch("hasError", Object.assign(error, {lifetime: 1000}));
 				onError(error);
 			})
 	}

@@ -1,6 +1,5 @@
 import firebase from "firebase/app";
 
-
 var config = {
 	apiKey: "AIzaSyDKI_c0HuhqrDntkm0qt8VDDcZdTXx_Mtk",
 	authDomain: "ankportal-d5a6d.firebaseapp.com",
