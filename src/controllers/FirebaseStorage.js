@@ -80,11 +80,11 @@ class FirebaseStorage {
 			.child(childRef)
 			.getDownloadURL()
 			.then(function(url) {
-				callback(url);
 				this.loadedUrl[childRef] = url;
 				let image = new Image();
 				image.src = url;
 				this.loadedImages[childRef] = image;
+				callback(url);
 			}.bind(this))
 			.catch(function(error) {
 				onError(error);

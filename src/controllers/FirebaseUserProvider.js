@@ -11,31 +11,39 @@ class FirebaseUserProvider {
 	usersInRoom = {};
 	chatUsers = {};
 	usersProfileImagesURL = {};
-	observers = {};
+	observersForUid = {};
+	observers = [];
 
 	constructor() {
 		this.usersDatabaseRef = firebase.database().ref("users");
 		this.roomUsersDatabaseRef = firebase.database().ref("room-user");
-		this.observerUsersProfiles();
 	}
 
 	onUserChange(userObject, uid) {
-		const observers = this.observers[uid];
+		let observers = this.observersForUid[uid];
 		if ( observers )
 			observers.forEach(observer => {
 				observer.onUserChange(userObject, uid);
 			})
+		this.observers.forEach(observer => {
+			observer.onUserChange(userObject, uid);
+		})
 	}
 
 	addObserverFor(uid, observer) {
 		if ( !uid ) return;
-		const observers = this.observers[uid];
+		const observers = this.observersForUid[uid];
 		if ( !observers ) 
-			this.observers[uid] = [observer]
+			this.observersForUid[uid] = [observer]
 		else {
 			if ( observers.indexOf(observer) === -1 )
-				this.observers[uid] = this.observers[uid].concat(observer);
+				this.observersForUid[uid] = this.observersForUid[uid].concat(observer);
 		}
+	}
+
+	addObserver(observer) {
+		if ( this.observers.indexOf(observer) === -1 )
+			this.observers.push(observer);
 	}
 
 	getReferenceForUid(uid) {
@@ -55,6 +63,7 @@ class FirebaseUserProvider {
 		} else {
 			this.usersInRoom[roomId] = [uid];
 		}
+		this.onUserChange();
 	}
 
 	getProfileImageFor(uid) {
@@ -85,6 +94,8 @@ class FirebaseUserProvider {
 			this.chatUsers[uid].isCurrent = true;
 		}
 		let profileImagePath = chatUser[uid].profileImagePath;
+		this.onUserChange(chatUser, uid);
+		
 		if ( profileImagePath === undefined ) return;
 		if ( this.usersProfileImagesURL[profileImagePath] !== undefined ) return;
 

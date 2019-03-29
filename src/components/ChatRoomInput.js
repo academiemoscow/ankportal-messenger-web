@@ -280,7 +280,7 @@ class ChatRoomInput extends React.Component {
 								id 			= "button-addon2"
 								onClick 	= { this.sendHandler }
 								disabled 	= { this.props.sendingMessage ? "disabled" : "" }> 
-								{ this.state.sendingMessage ? <Bubbling /> : <FaFeather size="1.5em" /> }
+								{ this.props.sendingMessage ? <Bubbling /> : <FaFeather size="1.5em" /> }
 						</button>
 					</div>
 				</div>

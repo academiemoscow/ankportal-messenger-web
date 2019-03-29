@@ -42,6 +42,7 @@ class Chat extends React.Component {
 		if (!user) return;
 		firebaseUserProvider.getUserById(user.uid, (user) => { 
 			this.setState({ currentUser: user });
+			firebaseUserProvider.observerUsersProfiles();
 			firebasePushMessaging.requestPermission();
 		});
 	}

@@ -10,9 +10,10 @@ import firebase from 'controllers/FirebaseInitialize';
 import 'firebase/auth';
 import ChatRoomInput from 'components/ChatRoomInput';
 import ChatRoomLogMessage from 'components/ChatRoomLogMessage';
+import ChatRoomLogLoadMoreButton from 'components/ChatRoomLogLoadMoreButton';
 
 import eventDispatcher from 'controllers/EventDispatcher';
-import ImgsViewer from 'react-images-viewer'
+import ImgsViewer from 'react-images-viewer';
 
 class ChatRoomLog extends React.Component {
 
@@ -22,7 +23,8 @@ class ChatRoomLog extends React.Component {
 	state = {
 		lastMessageTimeStamp: null,
 		headerMessages      : [],
-		imageUrlViewIndex	: null
+		imageUrlViewIndex	: null,
+		messagesCount 		: 0
 	}
 
 	constructor(props) {
@@ -77,22 +79,32 @@ class ChatRoomLog extends React.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		this.updateCacheImages();
+		this.updateMessageCount();
 
-		if ( prevState.headerMessages.length !== this.state.headerMessages.length ||
-			 prevState.imageUrlViewIndex !== this.state.imageUrlViewIndex ) 
-			return;
-
-		this.baronRef.scrollToLast();
+		if ( prevProps.roomId !== this.props.roomId ||
+			 prevState.lastMessageTimeStamp !== this.state.lastMessageTimeStamp ) 
+			this.baronRef.scrollToLast();
 	}
 
 	firebaseDidUpdateMessage(message) {
 		if ( message.chatRoomId !== this.props.roomId ) return;
 		this.forceUpdate();
 	}
+
+	updateMessageCount = () => {
+    	const messages = firebaseMessagesObserver.messages[this.props.roomId];
+    	if ( !messages ) return;
+
+    	if ( messages.length !== this.state.messagesCount ) 
+    		this.setState({ messagesCount : messages.length });
+	}
+
 	firebaseDidRecieveNewMessage(message) {
 		if ( message.chatRoomId !== this.props.roomId ) return;
+
 		this.setState({ 
-			lastMessageTimeStamp: message.timestamp 
+			lastMessageTimeStamp: message.timestamp,
+			messagesCount       : this.state.messagesCount + 1
 		});
 	}
 
@@ -237,15 +249,23 @@ class ChatRoomLog extends React.Component {
 		return formattedTimestamp;	
 	}
 
-	getMarginClass = (dateLabel, message1, message2, i, length) => {
+	getMarginClass = (dateLabel, messages, i) => {
 		let marginClass = "";
-		if ( i === length - 1 ) marginClass += " mb-2";
-		if ( i === 0 ) 
+		const length = messages.length;
+
+		if ( i === length - 1 || messages[i].fromId !== messages[i+1].fromId  ) 
+			marginClass += " mb-2";
+
+		if ( i === 0 || 
+			messages[i].fromId !== messages[i-1].fromId ||
+			( messages[i].fromId !== messages[i-1].fromId && i === length - 1 ) ||
+			( messages[i].fromId !== messages[i-1].fromId && messages[i].fromId !== messages[i+1].fromId )  )
+			marginClass += " last-message-radius";
+
+		if ( i === 0 )
 			marginClass += " mt-2";
-		else if ( message1.fromId === message2.fromId && dateLabel === undefined ) 
-			marginClass += " mt-1";
-		else 
-			marginClass += " mt-1";
+		else if ( messages[i].fromId === messages[i-1].fromId )
+			marginClass += " margin-top-3p";
 
 		return marginClass;
 	}
@@ -305,7 +325,7 @@ class ChatRoomLog extends React.Component {
 					oneDayBlock.push(dateLabel);
 				}
 
-				const marginClass = this.getMarginClass(dateLabel, messages[i], messages[i-1], i, messages.length);
+				const marginClass = this.getMarginClass(dateLabel, messages, i);
 
 				oneDayBlock.push(<ChatRoomLogMessage key 		 = { i }
 												 message 	 = { messages[i] } 
@@ -408,6 +428,22 @@ class ChatRoomLog extends React.Component {
 		return <div className="gradient"></div>
 	}
 
+	clickMoreDateHandler = (object) => {
+		object.setState({ isLoading : true });
+		firebaseMessagesObserver.loadPreviousFor(this.props.roomId, (count) => {
+			object.setState({ isLoading : false });
+			let state = { messagesCount : this.state.messagesCount + count };
+			this.setState(state);
+		});
+	}
+
+	renderLoadMoreButton = () => {
+		if ( this.props.roomId !== null && 
+			 this.state.messagesCount >= firebaseMessagesObserver.loadingPortion )
+			return <ChatRoomLogLoadMoreButton onClick  = { this.clickMoreDateHandler.bind(this) } 
+											  isHidden = { firebaseMessagesObserver.roomLoadedComplete[this.props.roomId] }/>		
+	}
+
 	render() {
 		return(
 			<div className   = "col-sm-8 p-0 chat-room-log-container">
@@ -417,6 +453,7 @@ class ChatRoomLog extends React.Component {
 					<Baron ref 		  = {(r) => this.baronRef = r}
 						   onScroll   = { this.handleScroll }
 						   params = { { barOnCls : "baron", direction: 'v' } }>
+						{ this.renderLoadMoreButton() }
 						<div className="chat-room-log p-2" ref={r => this.chatRoomLog = r}>
 							{ this.props.roomId === null ? this.renderPlaceholder() : this.createRoomLog() }
 						</div>

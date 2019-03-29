@@ -13,8 +13,8 @@ export default class ChatRoomListElement extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.updateCompanions();
 		this.subscribeForUserChange();
+		this.updateCompanions();
 	}
 
 	getDivClasses = () => {
@@ -36,6 +36,10 @@ export default class ChatRoomListElement extends React.Component {
 	}
 
 	subscribeForUserChange = () => {
+		firebaseUserProvider.addObserver(this);
+	}
+
+	subscribeForUserChangeByUid = () => {
 		this.companions.forEach(user => {
 			firebaseUserProvider.addObserverFor(user.uid, this);
 		})
@@ -48,6 +52,8 @@ export default class ChatRoomListElement extends React.Component {
 
 	updateCompanions = () => {
 		this.companions = firebaseUserProvider.getCompanionsInRoom(this.props.message.chatRoomId);
+		const companion = this.companions[0];
+		if ( !companion ) return;
 		this.avatarUrl = firebaseUserProvider.getProfileImageFor(this.companions[0].uid);
 	}
 

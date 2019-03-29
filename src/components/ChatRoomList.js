@@ -18,7 +18,9 @@ import Spinner from 'components/Spinner';
 class ChatRoomList extends React.Component {
 
 	state = {
-		roomLastMessages: {}
+		roomLastMessages: {},
+		isLoading : true,
+		listIsEmpty : false
 	}
 
 	newMessageSound = (() => {
@@ -40,6 +42,13 @@ class ChatRoomList extends React.Component {
 		firebaseMessagesObserver.addObserver(this);
 	}
 
+	firebaseDatabaseIsEmpty() {
+		this.setState({ 
+			isLoading : false,
+			listIsEmpty : true
+		});
+	}
+
 	firebaseDidUpdateMessage(message) {
 		this.forceUpdate();
 	}
@@ -54,7 +63,9 @@ class ChatRoomList extends React.Component {
 		let chatRoomLastMessage = {};
 		chatRoomLastMessage[message.chatRoomId] = message;
 		this.setState({ 
-			roomLastMessages: Object.assign(this.state.roomLastMessages, chatRoomLastMessage) 
+			roomLastMessages: Object.assign(this.state.roomLastMessages, chatRoomLastMessage),
+			isLoading : false,
+			listIsEmpty : false
 		});
 	}
 
@@ -71,8 +82,20 @@ class ChatRoomList extends React.Component {
 		}
 	}
 
-	createRoomList = () => {
+	getPlaceHolder = () => {
+		return (
+				<div className = "chat-room-list-placeholder-container shadow-sm">
+					<div className="card" style={ { width: '18rem' } }>
+					  <div className="card-body">
+					    <p className="card-text">Сообщений нет</p>
+					  </div>
+					</div>
+				</div>
+				)
+	}
 
+	createRoomList = () => {
+		if ( this.state.listIsEmpty ) return this.getPlaceHolder(); 
 		let divList = [];
 		let roomIdArray = Object.keys(this.state.roomLastMessages)
 							.sort((roomId1, roomId2) => {
@@ -125,7 +148,7 @@ class ChatRoomList extends React.Component {
 					</div>
 					<Baron>
 						<div>
-							{ Object.keys(this.state.roomLastMessages).length > 0 ? this.createRoomList() : <div className="spinner"><Spinner /></div> }
+							{ !this.state.isLoading ? this.createRoomList() : <div className="spinner"><Spinner /></div> }
 						</div>
 					</Baron>
 				</div>

@@ -11,6 +11,9 @@ class FirebaseMessagesObserver {
 	store = {};
 	observers = [];
 	messages = {};
+	roomLoadedComplete = {};
+
+	loadingPortion = 10;
 
 	unreadCountFor = (roomId) => {
 		if ( this.messages[roomId] === undefined ) return 0;
@@ -89,14 +92,40 @@ class FirebaseMessagesObserver {
 		firebaseStorage.addReference(downloadTask);
 	}
 
+	loadPreviousFor(roomId, callback = () => {}) {
+		const roomRef = firebase.database().ref(`messages/${roomId}`);
+		roomRef.orderByChild('timestamp')
+			   .endAt(this.messages[roomId][0].timestamp)
+			   .limitToLast(this.loadingPortion)
+			   .once('value', function(messagesSnapshot) {
+
+			   		const messages = Object.values(messagesSnapshot.toJSON());
+			   		const filtered = messages.slice(0, messages.length - 1)
+			   								 .filter(m => m.text !== m.fromId);
+
+			   		this.messages[roomId] = filtered.concat(this.messages[roomId]);
+			   		if ( messages.length < this.loadingPortion )
+			   			this.roomLoadedComplete[roomId] = true;
+
+			   		callback(filtered.length);
+
+			   }.bind(this))
+	}
+
 	observeForNewMessages() {
+		this.messageRef.once('value', function(roomSnapshotValue) {
+			if (roomSnapshotValue.toJSON() === null)
+				this.tellObservers("firebaseDatabaseIsEmpty");
+		}, this);
+
 		this.messageRef.on('child_added', function(roomSnapshot) {
 			if (typeof this.messages[roomSnapshot.key] === "undefined") {
 				this.messages[roomSnapshot.key] = [];
+				this.roomLoadedComplete[roomSnapshot.key] = false;
 				this.addCurrentUserToRoom(roomSnapshot.key);
 			}
 			const roomRef = firebase.database().ref(`messages/${roomSnapshot.key}`);
-			roomRef.limitToLast(10).on('child_added', function(roomMessagesSnapshot) {
+			roomRef.limitToLast(this.loadingPortion).on('child_added', function(roomMessagesSnapshot) {
 				this.newMessageHandler(roomMessagesSnapshot)	
 			}, this);
 

@@ -11,7 +11,8 @@ import eventDispatcher from 'controllers/EventDispatcher';
 
 import { IoIosFlash,
 		 IoIosCheckmark,
-		 IoIosDoneAll } from 'react-icons/io';
+		 IoIosDoneAll,
+		 IoIosSettings } from 'react-icons/io';
 
 class ChatRoomLogMessage extends React.Component {
 
@@ -31,10 +32,19 @@ class ChatRoomLogMessage extends React.Component {
 	}
 
 	getClassesForMessageBallon = (message) => {
+
+		let classes = "";
+
 		if ( message.fromId === firebase.auth().currentUser.uid ) {
-			return "offset-5 chat-message-outgoing";
+			classes = "offset-5 chat-message-outgoing";
+		} else {
+			classes = "col-7 chat-message-incoming";
 		}
-		return "col-7 chat-message-incoming";
+
+		if ( this.isImage() )
+			classes += " line-height-1";
+
+		return classes;
 	}
 
 	openOriginalUrl = () => {
@@ -44,6 +54,14 @@ class ChatRoomLogMessage extends React.Component {
 
 	clickImgHandler = () => {
 		this.props.onClick(this);
+	}
+
+	retnderMessageGlyph = () => {
+		if ( this.props.message.fromId !== "greetings_message" ) return;
+
+		return <div className = "messages-status-glyph">
+					<IoIosSettings />
+				</div>
 	}
 
 	renderContent = () => {
@@ -56,10 +74,19 @@ class ChatRoomLogMessage extends React.Component {
 			return <Spinner />;
 		}
 
-		return <div className = "message-image rounded-lg"
-					style 	  = { { backgroundImage : `url(${this.props.imageUrl})` } }
-					onClick   = { this.clickImgHandler }></div>
+		const imageDiv = <div>
+							 <div className = "message-image-filter rounded-lg"></div>
+							 <div className = "message-image rounded-lg"
+								  style 	= { { backgroundImage : `url("${this.props.imageUrl}")` } }
+								  onClick   = { this.clickImgHandler }></div>
+						 </div>;
 
+		return imageDiv;
+
+	}
+
+	isImage = () => {
+		return this.props.message.pathToImage !== undefined;
 	}
 
 	copyToClipboard = (text) => {
@@ -69,6 +96,8 @@ class ChatRoomLogMessage extends React.Component {
 			cls 	 : "toast-dark",
 			lifetime : 3000
  		}
+
+ 		if ( !navigator.clipboard ) return;
 
 		navigator.clipboard
 			.writeText(text)
@@ -143,9 +172,10 @@ class ChatRoomLogMessage extends React.Component {
 		return (
 			<div 
 				className	= { this.getClassesForMessageBallon(this.props.message) }
-				onClick 	= { this.clickHandler }
 				>
-				<div className = { "chat-room-log-message p-2 " + this.props.marginClass }>
+				<div className = { "chat-room-log-message p-2 " + this.props.marginClass }
+					 onClick   = { this.clickHandler }>
+					{ this.retnderMessageGlyph() }
 					{ this.renderContent() }
 					<div className = "message-status-container">
 						{ this.renderMessageStatus() }

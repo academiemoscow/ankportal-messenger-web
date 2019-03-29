@@ -430,6 +430,15 @@ button.badge {
     height: 100%;
 }
 
+.chat-room-list-placeholder-container {
+    display: inline-block;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+    top: 50px;
+    text-align: center;
+}
+
 .chat-room-list-element p {
     color: #5f5f5f;
     font-size: 0.8rem;
@@ -464,37 +473,88 @@ p.title {
     background-position: 50%;
 }
 
-.chat-room-log-message {
-    cursor: pointer;
-	display: inline-block;
-	max-width: 100%;
-	min-width: 50px;
-	text-align: left;
-    border-radius: 10px;
-    box-shadow: 0px 0px 3px 0px #bbbbbb;
-    background: #ffffff;
-    white-space: pre-wrap;
+.chat-room-log-load-more {
+    text-align: center;
+    padding: 10px;
 }
 
 .chat-room-log-message img {
     cursor: pointer;
 }
 
+.message-image:hover {
+    box-shadow: inset 0px 0px 10px 0px black;
+}
+
 .message-image {
+    position: relative;
     height: 200px;
     width: 200px;
+    box-shadow: inset 0px 0px 10px 0px black;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 50%;
 }
 
+.message-image-filter {
+}
+
+.chat-room-log-message {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    max-width: 100%;
+    min-width: 50px;
+    text-align: left;
+    box-shadow: 0px 0px 3px 0px #bbbbbb;
+    background: #ffffff;
+    white-space: pre-wrap;
+}
+
+.messages-status-glyph {
+    position: absolute;
+    right: 4px;
+    top: 0px;
+}
+
 .chat-message-outgoing {
 	text-align: right;
 	margin-right: 2%;
+    line-height: 24px;
+}
+
+.chat-message-outgoing 
+.chat-room-log-message {
+    border-radius: 10px 0px 0px 10px;
+}
+
+.chat-message-incoming 
+.chat-room-log-message {
+    border-radius: 0px 10px 10px 0px;
 }
 
 .chat-message-incoming {
 	text-align: left;
+    line-height: 24px;
+}
+
+
+.chat-message-outgoing
+.last-message-radius {
+    border-radius: 10px 10px 0px 10px;
+}
+
+.chat-message-incoming
+.last-message-radius {
+    border-radius: 10px 10px 10px 0px;
+}
+
+.margin-top-3p {
+    margin-top: 3px !important;
+}
+
+.line-height-1 {
+    line-height: 1px !important;
 }
 
 .chat-message-outgoing .chat-room-log-message {

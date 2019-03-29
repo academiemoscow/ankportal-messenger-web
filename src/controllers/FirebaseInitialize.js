@@ -1,12 +1,13 @@
 import firebase from "firebase/app";
 
+
 var config = {
-    apiKey: "AIzaSyCll36_3sm6KWS2QZBYhTRV6w5Xxy40piU",
-    authDomain: "ankportal-964f5.firebaseapp.com",
-    databaseURL: "https://ankportal-964f5.firebaseio.com",
-    projectId: "ankportal-964f5",
-    storageBucket: "ankportal-964f5.appspot.com",
-    messagingSenderId: "959682426231"
+	apiKey: "AIzaSyDKI_c0HuhqrDntkm0qt8VDDcZdTXx_Mtk",
+	authDomain: "ankportal-d5a6d.firebaseapp.com",
+	databaseURL: "https://ankportal-d5a6d.firebaseio.com",
+	projectId: "ankportal-d5a6d",
+	storageBucket: "ankportal-d5a6d.appspot.com",
+	messagingSenderId: "1087651949975"
 };
 
 firebase.initializeApp(config);
