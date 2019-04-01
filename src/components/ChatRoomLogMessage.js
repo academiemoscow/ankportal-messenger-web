@@ -173,7 +173,7 @@ class ChatRoomLogMessage extends React.Component {
 			<div 
 				className	= { this.getClassesForMessageBallon(this.props.message) }
 				>
-				<div className = { "chat-room-log-message p-2 " + this.props.marginClass }
+				<div className = { "chat-room-log-message " + this.props.marginClass }
 					 onClick   = { this.clickHandler }>
 					{ this.retnderMessageGlyph() }
 					{ this.renderContent() }

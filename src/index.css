@@ -483,14 +483,14 @@ p.title {
 }
 
 .message-image:hover {
-    box-shadow: inset 0px 0px 10px 0px black;
+    box-shadow: inset 0px 0px 20px 0px black;
 }
 
 .message-image {
     position: relative;
     height: 200px;
     width: 200px;
-    box-shadow: inset 0px 0px 10px 0px black;
+    box-shadow: inset 0px 0px 20px 0px black;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 50%;
@@ -500,6 +500,7 @@ p.title {
 }
 
 .chat-room-log-message {
+    padding: 0.6rem !important;
     position: relative;
     cursor: pointer;
     display: inline-block;
@@ -513,7 +514,7 @@ p.title {
 
 .messages-status-glyph {
     position: absolute;
-    right: 4px;
+    right: 10px;
     top: 0px;
 }
 
@@ -525,12 +526,12 @@ p.title {
 
 .chat-message-outgoing 
 .chat-room-log-message {
-    border-radius: 10px 0px 0px 10px;
+    border-radius: 20px 0px 0px 20px;
 }
 
 .chat-message-incoming 
 .chat-room-log-message {
-    border-radius: 0px 10px 10px 0px;
+    border-radius: 0px 20px 20px 0px;
 }
 
 .chat-message-incoming {
@@ -541,12 +542,12 @@ p.title {
 
 .chat-message-outgoing
 .last-message-radius {
-    border-radius: 10px 10px 0px 10px;
+    border-radius: 20px 20px 0px 20px;
 }
 
 .chat-message-incoming
 .last-message-radius {
-    border-radius: 10px 10px 10px 0px;
+    border-radius: 20px 20px 20px 0px;
 }
 
 .margin-top-3p {

@@ -85,7 +85,7 @@ class ChatRoomLog extends React.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		this.updateCacheImages();
-		this.updateMessageCount();
+		this.updateMessageCount(); 
 
 		if ( prevProps.roomId !== this.props.roomId ||
 			 prevState.lastMessageTimeStamp !== this.state.lastMessageTimeStamp ) 
