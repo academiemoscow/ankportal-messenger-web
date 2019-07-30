@@ -1,1 +1,1 @@
-# ANKPortal messenger creating with create-react-app
+# ANKPortal messenger created with create-react-app
