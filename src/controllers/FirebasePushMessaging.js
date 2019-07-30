@@ -5,8 +5,7 @@ import firebaseUserProvider from 'controllers/FirebaseUserProvider';
 import firebaseMessageUploader from 'controllers/FirebaseMessageUploader';
 import { changeRoom } from 'redux/actions';
 
-const publicKey = "BNXgr0OkVDuoT1sQd-6McjClEvozEhywkwOW0M7VMC3L9jPJ1jL88eLi7PzLg4qWFidvhBPweZUHEFEolCZxDrs";
-
+import { FirebaseAPIKeys } from 'config/APIKeys'; 
 
 class FirebasePushMessaging {
 
@@ -16,7 +15,7 @@ class FirebasePushMessaging {
 		this.isSupported = firebase.messaging.isSupported();
 		if ( !this.isSupported ) return;
 		this.messaging = firebase.messaging();
-		this.messaging.usePublicVapidKey(publicKey);
+		this.messaging.usePublicVapidKey(FirebaseAPIKeys.storagePublicKey);
 		this.permissionGranted = this.permissionGranted.bind(this);
 		this.onTokenRefresh = this.onTokenRefresh.bind(this);
 		this.onMessage = this.onMessage.bind(this);

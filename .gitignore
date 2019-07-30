@@ -3,6 +3,9 @@
 #cert
 /src/ssl
 
+#config, keys
+/src/config
+
 # dependencies
 /node_modules
 /.pnp
